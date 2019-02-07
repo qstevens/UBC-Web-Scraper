@@ -13,9 +13,13 @@ let cheerio = require('cheerio');
 
 let UBCCourses = 'https://courses.students.ubc.ca/cs/courseschedule?pname=subjarea&tname=subj-all-departments';
 
+let SubjectListMap = {};
+// let AllCourses = [];
+// let SubjectCourseMap = {};
+
 rp(UBCCourses)
     .then(function (html) {
-        SubjectList = [];
+        let SubjectList = [];
 
         let $ = cheerio.load(html);
         let mainTable = $('#mainTable');
@@ -23,22 +27,47 @@ rp(UBCCourses)
         let subjects = $('tr', tbody);
         
         subjects.each(function(i, elem) {
-            let codeChild = $(this).first();
+            // let codeChild = $(this).first();
+            // let code = codeChild.text();
+
+            // let subject_tr_children = $(this).toArray()[0].children;
+            // let subject_a = subject_tr_children[0];
+            // let subject_href = subject_a.children[0].attribs.href;
+            // let subject_code = subject_a.children[0].children[0].data;
+
+            // let subject_title = subject_tr_children[2]
+            // let titleChild = $(codeChild).next();
+            // let title = titleChild.text();
+
+            // let facultyChild = $(titleChild).next();
+            // let faculty = facultyChild.text();
+
+            // let subject = new Subject(subject_code, subject_href, title, faculty);
+            // SubjectList.push(subject);
+            // SubjectListMap[subject_code] = subject;
+
+            let codeChild = $(this).children().first();
             let code = codeChild.text();
+            // console.log(code);
 
             let link = $('a', codeChild).attr('href');
+            // console.log(link);
 
             let titleChild = $(codeChild).next();
             let title = titleChild.text();
+            // console.log(title);
 
             let facultyChild = $(titleChild).next();
             let faculty = facultyChild.text();
+            // console.log(faculty);
 
             let subject = new Subject(code, link, title, faculty);
             SubjectList.push(subject);
+            SubjectListMap[code] = subject;
+
         });
     
-        return SubjectList.slice(SubjectList.length / 2);
+        return SubjectList.slice(200);
     })
     .then(function (SubjectList) {
         // put rp(subjects) on promise array and promise.all the result
@@ -54,20 +83,16 @@ rp(UBCCourses)
             }
         }
 
-        // promises.push(rp('https://courses.students.ubc.ca' + SubjectList[0].link));
-
-        return promises.slice(promises.length / 2);
-
-        // console.log(subjects.length);
+        return promises;
     })
     .then(promises => Promise.all(promises))
     .then(function (promises) {
-        let AllCourses = [];
-        // console.log('hello');
+        CourseList = [];
+        // console.log(SubjectListMap);
+        console.log(promises.length);
         for (let promise of promises) {
             let $ = cheerio.load(promise);
 
-            CourseList = [];
 
             let mainTable = $('#mainTable');
             let tbody = $('tbody', mainTable);
@@ -82,15 +107,19 @@ rp(UBCCourses)
                 let course_td_title = course_tr.children[1].children[0].data;
 
                 let course = new Course(course_td_a_text, course_td_title, course_td_a_href);
-    
+                // console.log(SubjectListMap[course.subject_code]);
+                SubjectListMap[course.subject_code].courses.push(course);
                 CourseList.push(course);
             });
 
-            AllCourses.push(CourseList);
+            // AllCourses.push(CourseList);
         }
-        // console.log(AllCourses);
 
-        return AllCourses;
+        return CourseList;
+    })
+    .then(function (CourseList) {
+        // console.log(SubjectListMap);
+        console.log(CourseList);
     })
     .catch(function (err) {
         console.log(err);
