@@ -5,6 +5,7 @@ let https = require('https');
 // https.globalAgent.maxSockets = 1;
 
 let Subject = require('./CourseInfo/Subject');
+let Course = require('./CourseInfo/Course')
 let SubjectScraper = require('./SubjectScraper');
 
 let rp = require('request-promise');
@@ -37,7 +38,7 @@ rp(UBCCourses)
             SubjectList.push(subject);
         });
     
-        return SubjectList;
+        return SubjectList.slice(SubjectList.length / 2);
     })
     .then(function (SubjectList) {
         // put rp(subjects) on promise array and promise.all the result
@@ -45,7 +46,7 @@ rp(UBCCourses)
         let promises = [];
         for (let subject of SubjectList) {
             if (subject.link !== undefined && subject.link !== null) {
-                console.log(subject.link);
+                // console.log(subject.link);
                 promises.push(rp('https://courses.students.ubc.ca' + subject.link)
                 .catch(function (err) {
                     console.log(err);
@@ -62,11 +63,9 @@ rp(UBCCourses)
     .then(promises => Promise.all(promises))
     .then(function (promises) {
         let AllCourses = [];
-        console.log('hello');
+        // console.log('hello');
         for (let promise of promises) {
             let $ = cheerio.load(promise);
-            let h5 = $('h5');
-            console.log(h5.text());
 
             CourseList = [];
 
@@ -75,25 +74,21 @@ rp(UBCCourses)
             let subjects = $('tr', tbody);
             
             subjects.each(function(i, elem) {
-                let codeChild = $(this).first();
-                let code = codeChild.text();
+
+                let course_tr = $(this).toArray()[0];
+                let course_td_a = course_tr.children[0].children[0];
+                let course_td_a_href = course_td_a.attribs.href;
+                let course_td_a_text = course_td_a.children[0].data;
+                let course_td_title = course_tr.children[1].children[0].data;
+
+                let course = new Course(course_td_a_text, course_td_title, course_td_a_href);
     
-                let link = $('a', codeChild).attr('href');
-    
-                let titleChild = $(codeChild).next();
-                let title = titleChild.text();
-                console.log(title);
-    
-                let facultyChild = $(titleChild).next();
-                let faculty = facultyChild.text();
-                console.log(faculty);
-    
-                let subject = new Subject(code, link, title, faculty);
-                CourseList.push(subject);
+                CourseList.push(course);
             });
 
             AllCourses.push(CourseList);
         }
+        // console.log(AllCourses);
 
         return AllCourses;
     })
