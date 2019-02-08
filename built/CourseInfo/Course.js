@@ -1,5 +1,6 @@
-module.exports = class Course {
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+class Course {
     constructor(course, title, link) {
         this.course_name = course;
         this.subject_code = course.split(" ")[0];
@@ -8,5 +9,5 @@ module.exports = class Course {
         this.course_link = link;
         this.sections = {};
     }
-
 }
+exports.Course = Course;

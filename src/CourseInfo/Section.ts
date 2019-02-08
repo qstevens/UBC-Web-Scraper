@@ -1,4 +1,20 @@
-module.exports = class Section {
+export class Section {
+
+    status: string;
+    section: string;
+    href: string;
+    activity: string;
+    term: string;
+    interval: string;
+    days: string;
+    start: string;
+    end: string;
+    comments: string;
+
+    subject_code: string;
+    course_number: string;
+    section_number: string;
+
 
     constructor(status, section, href, activity, term, interval, days, start, end, comments) {
         this.status = status;

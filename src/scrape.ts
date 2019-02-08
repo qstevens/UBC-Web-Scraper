@@ -6,10 +6,12 @@ http.globalAgent.maxSockets = 50;
 
 // console.log (https.globalAgent.maxSockets);
 
-let Subject = require('./CourseInfo/Subject');
-let Course = require('./CourseInfo/Course')
-let Section = require('./CourseInfo/Section')
-let SubjectScraper = require('./SubjectScraper');
+// let Subject = require('./CourseInfo/Subject.ts');
+import {Subject} from './CourseInfo/Subject';
+import {Course} from "./CourseInfo/Course";
+import {Section} from "./CourseInfo/Section";
+// let Course = require('./CourseInfo/Course.ts')
+// let Section = require('./CourseInfo/Section.ts')
 
 let rp = require('request-promise');
 let cheerio = require('cheerio');
@@ -67,7 +69,7 @@ rp(UBCCourses)
     })
     .then(promises => Promise.all(promises))
     .then(function (promises) {
-        CourseList = [];
+        let CourseList = [];
         // console.log(SubjectListMap);
         // console.log(promises.length);
         for (let promise of promises) {
@@ -246,16 +248,11 @@ rp(UBCCourses)
             let generalRemaining = $('td', currSeat).first().next().text();
             currSeat = currSeat.next();
             let restrictedRemaining = $('td', currSeat).first().next().text();
-            // console.log(totalRemaining);
-            // console.log(currrentlyRegistered);
-            // console.log(generalRemaining);
-            // console.log(restrictedRemaining);
+            
             SubjectListMap[section_subject].courses[section_course].sections[section_section].totalRemaining = totalRemaining;
             SubjectListMap[section_subject].courses[section_course].sections[section_section].currentlyRegistered = currrentlyRegistered;
             SubjectListMap[section_subject].courses[section_course].sections[section_section].generalRemaining = generalRemaining;
             SubjectListMap[section_subject].courses[section_course].sections[section_section].restrictedRemaining = restrictedRemaining;
-            // break;
-
         }
         console.log(SubjectListMap);
 

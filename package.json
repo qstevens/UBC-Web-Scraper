@@ -9,7 +9,8 @@
   },
   "devDependencies": {},
   "scripts": {
-    "start": "node src/scrape.js",
+    "build": "tsc",
+    "start": "node built/scrape.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
