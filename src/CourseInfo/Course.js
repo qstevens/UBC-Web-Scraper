@@ -6,6 +6,7 @@ module.exports = class Course {
         this.course_number = course.split(" ")[1];
         this.course_title = title;
         this.course_link = link;
+        this.sections = {};
     }
 
 }
