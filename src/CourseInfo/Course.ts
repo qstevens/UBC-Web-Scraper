@@ -11,7 +11,7 @@ export class Course {
     credits: number;
     description: string;
 
-    constructor(course, title, link) {
+    constructor(course:string, title:string, link:string) {
         this.course_name = course;
         this.subject_code = course.split(" ")[0];
         this.course_number = course.split(" ")[1];

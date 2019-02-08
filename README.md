@@ -1,3 +1,5 @@
 # UBC-Web-Scraper
 
-A Webscraper for courses.ubc.ca which stores scraped information on a database (tbd).
+Scrapes the UBC Courses website for information on all Subjects, Courses, and Sections.
+
+Information is stored in a MongoDB collection.

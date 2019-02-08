@@ -8,7 +8,7 @@ export class Subject {
     faculty: string;
     courses: {[key:string]:Course};
 
-    constructor(code, link, title, faculty) {
+    constructor(code:string, link:string, title:string, faculty:string) {
         this.code = code;
         this.link = link;
         this.title = title;

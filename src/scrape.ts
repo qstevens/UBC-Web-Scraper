@@ -225,6 +225,9 @@ rp(UBCCourses)
 
         return;
     })
+    .then(function () {
+        // Store SubjectListMap to MongoDB
+    })
     .catch(function (err) {
         console.log(err);
     });
