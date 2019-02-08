@@ -1,8 +1,10 @@
 export class Section {
 
-    status: string;
-    section: string;
     href: string;
+
+    section: string;
+
+    status: string;
     activity: string;
     term: string;
     interval: string;
@@ -10,6 +12,14 @@ export class Section {
     start: string;
     end: string;
     comments: string;
+    building: string;
+    room: string;
+    instructors: string[];
+
+    totalRemaining: number;
+    currentlyRegistered: number;
+    generalRemaining: number;
+    restrictedRemaining: number;
 
     subject_code: string;
     course_number: string;

@@ -4,25 +4,20 @@ let https = require('https');
 https.globalAgent.maxSockets = 50;
 http.globalAgent.maxSockets = 50;
 
-// console.log (https.globalAgent.maxSockets);
-
-// let Subject = require('./CourseInfo/Subject.ts');
 import {Subject} from './CourseInfo/Subject';
 import {Course} from "./CourseInfo/Course";
 import {Section} from "./CourseInfo/Section";
-// let Course = require('./CourseInfo/Course.ts')
-// let Section = require('./CourseInfo/Section.ts')
 
 let rp = require('request-promise');
 let cheerio = require('cheerio');
 
 let UBCCourses = 'https://courses.students.ubc.ca/cs/courseschedule?pname=subjarea&tname=subj-all-departments';
 
-let SubjectListMap = {};
+let SubjectListMap:{[key:string]:Subject} = {};
 
 rp(UBCCourses)
-    .then(function (html) {
-        let SubjectList = [];
+    .then(function (html:string) {
+        let SubjectList: Subject[] = [];
 
         let $ = cheerio.load(html);
         let mainTable = $('#mainTable');
@@ -52,7 +47,7 @@ rp(UBCCourses)
         });
 
         let promises = [];
-        // for (let subject of SubjectList.slice(SubjectList.length / 2, SubjectList.length / 2 + 10)) {
+
         for (let subject of SubjectList) {
             if (subject.link !== undefined && subject.link !== null) {
                 // console.log(subject.link);
@@ -94,9 +89,7 @@ rp(UBCCourses)
                 // console.log(SubjectListMap[course.subject_code]);
                 CourseList.push(course);
             });
-            // console.log(SubjectListMap['GERM']);
-
-            // console.log(SubjectListMap);
+            
         }
 
         let sectionPromises = []
@@ -110,10 +103,10 @@ rp(UBCCourses)
         return sectionPromises;
     })
     .then(promises => Promise.all(promises))
-    .then(function (sectionPromises) {
+    .then(function (sectionPromises:string[]) {
         // console.log(SubjectListMap);
         // console.log(CourseList);
-        let SectionList = [];
+        let SectionList:Section[] = [];
 
         for (let promise of sectionPromises) {
             let $ = cheerio.load(promise);
@@ -177,7 +170,7 @@ rp(UBCCourses)
                 }
             });
         }
-        let innerSectionPromises = []
+        let innerSectionPromises: Section[] = []
         // for (let section of SectionList.slice(SectionList.length / 2, SectionList.length / 2 + 10)) {
         for (let section of SectionList) {
             innerSectionPromises.push(rp('https://courses.students.ubc.ca' + section.href));
@@ -188,7 +181,7 @@ rp(UBCCourses)
         // console.log(SubjectListMap['GERM']);
     })
     .then(promises => Promise.all(promises))
-    .then(function (sectionPromises) {
+    .then(function (sectionPromises: string[]) {
 
         for (let promise of sectionPromises) {
             let $ = cheerio.load(promise);
