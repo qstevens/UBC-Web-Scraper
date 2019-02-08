@@ -4,7 +4,7 @@ let https = require('https');
 https.globalAgent.maxSockets = 50;
 http.globalAgent.maxSockets = 50;
 
-console.log (https.globalAgent.maxSockets);
+// console.log (https.globalAgent.maxSockets);
 
 let Subject = require('./CourseInfo/Subject');
 let Course = require('./CourseInfo/Course')
@@ -27,7 +27,7 @@ rp(UBCCourses)
         let tbody = $('tbody', mainTable);
         let subjects = $('tr', tbody);
         
-        subjects.each(function(i, elem) {
+        subjects.each(function() {
             let codeChild = $(this).children().first();
             let code = codeChild.text();
             // console.log(code);
