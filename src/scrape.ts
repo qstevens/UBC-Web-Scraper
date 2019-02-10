@@ -1,8 +1,8 @@
 let http = require('http');
 let https = require('https');
 
-https.globalAgent.maxSockets = 50;
-http.globalAgent.maxSockets = 50;
+https.globalAgent.maxSockets = 100;
+http.globalAgent.maxSockets = 100;
 
 import {Subject} from './CourseInfo/Subject';
 import {Course} from "./CourseInfo/Course";
@@ -53,7 +53,7 @@ rp(UBCCourses)
             }
         }
 
-        console.log(SubjectList.length);
+        console.log("Subjects: " + SubjectList.length);
 
         return promises;
     })
@@ -88,7 +88,7 @@ rp(UBCCourses)
             sectionPromises.push(rp('https://courses.students.ubc.ca' + course.course_link));
         }
 
-        console.log(CourseList.length);
+        console.log("Courses: " + CourseList.length);
 
         return sectionPromises;
     })
@@ -160,7 +160,7 @@ rp(UBCCourses)
             innerSectionPromises.push(rp('https://courses.students.ubc.ca' + section.href));
         }
 
-        console.log(SectionList.length);
+        console.log("Sections: " + SectionList.length);
         return innerSectionPromises;
     })
     .then(promises => Promise.all(promises))
