@@ -5,7 +5,6 @@
   "main": "SubjectScraper.js",
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
-    "express": "^4.16.4",
     "kerberos": "~0.0.17",
     "mongodb": "^2.2.36",
     "request": "^2.88.0",
