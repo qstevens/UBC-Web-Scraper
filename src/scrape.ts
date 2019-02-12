@@ -1,8 +1,10 @@
 let http = require('http');
 let https = require('https');
 
-https.globalAgent.maxSockets = 100;
-http.globalAgent.maxSockets = 100;
+let fs = require('fs');
+
+https.globalAgent.maxSockets = 50;
+http.globalAgent.maxSockets = 50;
 
 import {Subject} from './CourseInfo/Subject';
 import {Course} from "./CourseInfo/Course";
@@ -223,11 +225,17 @@ rp(UBCCourses)
         }
         console.log(SubjectListMap);
 
-        return;
+        return SubjectListMap;
     })
-    .then(function () {
-        // Store SubjectListMap to MongoDB
+    .then(function (CoursesMap) {
+        console.log("writing file");
+        console.log(JSON.stringify(CoursesMap));
+        fs.writeFileSync('UBC-Courses.json', JSON.stringify(CoursesMap));
+        console.log("written to file");
+        console.log(fs.readFileSync('UBC-Courses.json'));
+        // return;
     })
     .catch(function (err) {
         console.log(err);
     });
+
