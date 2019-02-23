@@ -33,7 +33,7 @@ rp(UBCCourses)
             let link = $('a', codeChild).attr('href');
 
             let titleChild = $(codeChild).next();
-            let title = titleChild.text();
+            let title = titleChild.text().trim();
 
             let facultyChild = $(titleChild).next();
             let faculty = facultyChild.text();
