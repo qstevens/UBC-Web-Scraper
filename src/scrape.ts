@@ -13,11 +13,18 @@ import {Section} from "./CourseInfo/Section";
 let rp = require('request-promise');
 let cheerio = require('cheerio');
 
-let UBCCourses = 'https://courses.students.ubc.ca/cs/courseschedule?pname=subjarea&tname=subj-all-departments';
+let year: number = 2019;
+let session: string = 'S';
+
+let numSubjects: number = 20;
+
+// let ubcCourseURL = 'https://courses.students.ubc.ca/cs/courseschedule?pname=subjarea&tname=subj-all-departments';
+
+let ubcCourseURL: string = 'https://courses.students.ubc.ca/cs/courseschedule?sesscd=' + session + '&sessyr=' + year + '&pname=subjarea'
 
 let SubjectListMap:{[key:string]:Subject} = {};
 
-rp(UBCCourses)
+rp(ubcCourseURL)
     .then(function (html:string) {
         let SubjectList: Subject[] = [];
 
@@ -28,23 +35,25 @@ rp(UBCCourses)
         
         subjects.each(function() {
             let codeChild = $(this).children().first();
-            let code = codeChild.text();
+            let code: string = codeChild.text();
 
-            let link = $('a', codeChild).attr('href');
+            let link: string = $('a', codeChild).attr('href');
 
             let titleChild = $(codeChild).next();
-            let title = titleChild.text().trim();
+            let title: string = titleChild.text().trim();
 
             let facultyChild = $(titleChild).next();
-            let faculty = facultyChild.text();
+            let faculty: string = facultyChild.text();
 
-            let subject = new Subject(code, link, title, faculty);
+            let subject: Subject = new Subject(code, link, title, faculty);
             SubjectList.push(subject);
             SubjectListMap[code] = subject;
 
         });
 
-        let promises = [];
+        let promises: Promise<string>[] = [];
+
+        // SubjectList = SubjectList.slice(SubjectList.length - numSubjects);
 
         for (let subject of SubjectList) {
             if (subject.link !== undefined && subject.link !== null) {
@@ -60,7 +69,7 @@ rp(UBCCourses)
         return promises;
     })
     .then(promises => Promise.all(promises))
-    .then(function (promises) {
+    .then(function (promises: string[]) {
         let CourseList = [];
         for (let promise of promises) {
             let $ = cheerio.load(promise);
@@ -74,11 +83,11 @@ rp(UBCCourses)
 
                 let course_tr = $(this).toArray()[0];
                 let course_td_a = course_tr.children[0].children[0];
-                let course_td_a_href = course_td_a.attribs.href;
-                let course_td_a_text = course_td_a.children[0].data;
-                let course_td_title = course_tr.children[1].children[0].data;
+                let course_td_a_href: string = course_td_a.attribs.href;
+                let course_td_a_text: string = course_td_a.children[0].data;
+                let course_td_title: string = course_tr.children[1].children[0].data;
 
-                let course = new Course(course_td_a_text, course_td_title, course_td_a_href);
+                let course: Course = new Course(course_td_a_text, course_td_title, course_td_a_href);
                 SubjectListMap[course.subject_code].courses[course.course_number] = course;
                 CourseList.push(course);
             });
@@ -115,32 +124,33 @@ rp(UBCCourses)
             subjects.each(function(i, elem) {
                 let curr_td = $(this).children().first();
 
-                let status = curr_td.text();
+                let status: string = curr_td.text();
                 curr_td = curr_td.next();
 
-                let curr_section = curr_td.text();
-                let href = $('a', curr_td).attr('href');
+                let curr_section: string = curr_td.text();
+                let href: string = $('a', curr_td).attr('href');
                 curr_td = curr_td.next();
 
-                let activity = curr_td.text();
+                let activity: string = curr_td.text();
                 curr_td = curr_td.next();
 
-                let term = curr_td.text();
+                let term: string = curr_td.text();
                 curr_td = curr_td.next();
 
-                let interval = curr_td.text();
+                let interval: string = curr_td.text();
                 curr_td = curr_td.next();
 
-                let days = curr_td.text();
+                let days: string = curr_td.text();
                 curr_td = curr_td.next();
 
-                let start = curr_td.text();
+                let start:string = curr_td.text();
                 curr_td = curr_td.next();
 
-                let end = curr_td.text();
+                let end:string = curr_td.text();
                 curr_td = curr_td.next();
 
-                let comments = curr_td.text();
+                let comments: string = curr_td.text();
+                comments = comments.trim().replace("Section Comments", "").trim();
 
                 let section = new Section(status, curr_section, href, activity, term, interval, days, start, end, comments);
 
@@ -230,9 +240,9 @@ rp(UBCCourses)
     .then(function (CoursesMap) {
         console.log("writing file");
         console.log(JSON.stringify(CoursesMap));
-        fs.writeFileSync('UBC-Courses.json', JSON.stringify(CoursesMap));
+        fs.writeFileSync('UBC-Courses-' + year + session + '.json', JSON.stringify(CoursesMap));
         console.log("written to file");
-        console.log(fs.readFileSync('UBC-Courses.json'));
+        console.log(fs.readFileSync('UBC-Courses-' + year + session + '.json'));
         // return;
     })
     .catch(function (err) {
