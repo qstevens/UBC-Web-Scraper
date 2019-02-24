@@ -239,10 +239,10 @@ rp(ubcCourseURL)
     })
     .then(function (CoursesMap) {
         console.log("writing file");
-        console.log(JSON.stringify(CoursesMap));
-        fs.writeFileSync('UBC-Courses-' + year + session + '.json', JSON.stringify(CoursesMap));
+        let destination: string = '../data/UBC-Courses-' + year + session + '.json'
+        fs.writeFileSync(destination, JSON.stringify(CoursesMap));
         console.log("written to file");
-        console.log(fs.readFileSync('UBC-Courses-' + year + session + '.json'));
+        console.log(fs.readFileSync(destination));
         // return;
     })
     .catch(function (err) {
