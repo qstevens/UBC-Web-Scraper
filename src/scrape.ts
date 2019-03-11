@@ -16,11 +16,13 @@ let cheerio = require('cheerio');
 let year: number = 2019;
 let session: string = 'S';
 
-let numSubjects: number = 20;
+// let numSubjects: number = 20;
+
+let sessionAndYearAppend = "&sessyr=" + year + "&sesscd=" + session;
 
 // let ubcCourseURL = 'https://courses.students.ubc.ca/cs/courseschedule?pname=subjarea&tname=subj-all-departments';
 
-let ubcCourseURL: string = 'https://courses.students.ubc.ca/cs/courseschedule?sesscd=' + session + '&sessyr=' + year + '&pname=subjarea'
+let ubcCourseURL: string = 'https://courses.students.ubc.ca/cs/courseschedule?sesscd=' + session + '&sessyr=' + year + '&pname=subjarea';
 
 let SubjectListMap:{[key:string]:Subject} = {};
 
@@ -38,6 +40,7 @@ rp(ubcCourseURL)
             let code: string = codeChild.text();
 
             let link: string = $('a', codeChild).attr('href');
+            // console.log(link);
 
             let titleChild = $(codeChild).next();
             let title: string = titleChild.text().trim();
@@ -57,7 +60,7 @@ rp(ubcCourseURL)
 
         for (let subject of SubjectList) {
             if (subject.link !== undefined && subject.link !== null) {
-                promises.push(rp('https://courses.students.ubc.ca' + subject.link)
+                promises.push(rp('https://courses.students.ubc.ca' + subject.link + sessionAndYearAppend)
                 .catch(function (err) {
                     console.log(err);
                 }));
@@ -83,7 +86,7 @@ rp(ubcCourseURL)
 
                 let course_tr = $(this).toArray()[0];
                 let course_td_a = course_tr.children[0].children[0];
-                let course_td_a_href: string = course_td_a.attribs.href;
+                let course_td_a_href: string = course_td_a.attribs.href + sessionAndYearAppend;
                 let course_td_a_text: string = course_td_a.children[0].data;
                 let course_td_title: string = course_tr.children[1].children[0].data;
 
@@ -128,7 +131,7 @@ rp(ubcCourseURL)
                 curr_td = curr_td.next();
 
                 let curr_section: string = curr_td.text();
-                let href: string = $('a', curr_td).attr('href');
+                let href: string = $('a', curr_td).attr('href') + sessionAndYearAppend;
                 curr_td = curr_td.next();
 
                 let activity: string = curr_td.text();
@@ -239,7 +242,7 @@ rp(ubcCourseURL)
     })
     .then(function (CoursesMap) {
         console.log("writing file");
-        let destination: string = '../data/UBC-Courses-' + year + session + '.json'
+        let destination: string = __dirname + '/../data/UBC-Courses-' + year + session + '.json'
         fs.writeFileSync(destination, JSON.stringify(CoursesMap));
         console.log("written to file");
         console.log(fs.readFileSync(destination));
