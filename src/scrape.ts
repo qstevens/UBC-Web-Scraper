@@ -245,7 +245,13 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
         .then(function (CoursesMap: object) {
             console.log("writing file");
             let destination = __dirname + '/../data/UBC-Courses-' + year + session + '.json'
-            fs.mkdirSync(path.dirname(destination));
+            try {
+                fs.mkdirSync(path.dirname(destination));
+            } catch (e) {
+                if (e.code !== 'EEXIST') {
+                    throw e;
+                }
+            }
             fs.writeFileSync(destination, JSON.stringify(CoursesMap));
             console.log("written to file");
             console.log(fs.readFileSync(destination));
