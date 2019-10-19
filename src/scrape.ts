@@ -36,8 +36,8 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
             let tbody = $('tbody', mainTable);
             let subjects = $('tr', tbody);
 
-            subjects.each(function() {
-                let codeChild = $(this).children().first();
+            subjects.each(function(_idx: any, elem: CheerioElement) {
+                let codeChild = $(elem).children().first();
                 let code: string = codeChild.text();
 
                 let link: string = $('a', codeChild).attr('href');
@@ -64,7 +64,7 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
             for (let subject of SubjectList) {
                 if (subject.link !== undefined && subject.link !== null) {
                     promises.push(rp('https://courses.students.ubc.ca' + subject.link + sessionAndYearAppend)
-                    .catch(function (err) {
+                    .catch(function (err: any) {
                         console.log(err);
                     }));
                 }
@@ -74,9 +74,9 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
 
             return promises;
         })
-        .then(promises => Promise.all(promises))
+        .then((promises: Promise<string>[]) => Promise.all(promises))
         .then(function (promises: string[]) {
-            let CourseList = [];
+            let CourseList: Course[] = [];
             for (let promise of promises) {
                 let $ = cheerio.load(promise);
 
@@ -85,15 +85,15 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
                 let tbody = $('tbody', mainTable);
                 let subjects = $('tr', tbody);
 
-                subjects.each(function(i, elem) {
+                subjects.each(function(_idx: any, elem: CheerioElement) {
 
-                    let course_tr = $(this).toArray()[0];
+                    let course_tr = $(elem).toArray()[0];
                     let course_td_a = course_tr.children[0].children[0];
                     let course_td_a_href: string = course_td_a.attribs.href + sessionAndYearAppend;
                     let course_td_a_text: string = course_td_a.children[0].data;
                     let course_td_title: string = course_tr.children[1].children[0].data;
 
-                    let course: Course = new Course(course_td_a_text, course_td_title, course_td_a_href);
+                    let course = new Course(course_td_a_text, course_td_title, course_td_a_href);
                     SubjectListMap[course.subject_code].courses[course.course_number] = course;
                     CourseList.push(course);
                 });
@@ -109,7 +109,7 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
 
             return sectionPromises;
         })
-        .then(promises => Promise.all(promises))
+        .then((promises: Promise<any>[]) => Promise.all(promises))
         .then(function (sectionPromises:string[]) {
 
             let SectionList:Section[] = [];
@@ -127,8 +127,8 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
                 let cdfText = $('#cdfText');
                 let credits = cdfText.next().text();
 
-                subjects.each(function(i, elem) {
-                    let curr_td = $(this).children().first();
+                subjects.each(function(_idx: any, elem: CheerioElement) {
+                    let curr_td = $(elem).children().first();
 
                     let status: string = curr_td.text();
                     curr_td = curr_td.next();
@@ -181,7 +181,7 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
             console.log("Sections: " + SectionList.length);
             return innerSectionPromises;
         })
-        .then(promises => Promise.all(promises))
+        .then((promises: Promise<any>[]) => Promise.all(promises))
         .then(function (sectionPromises: string[]) {
 
             for (let promise of sectionPromises) {
@@ -207,14 +207,13 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
                 SubjectListMap[section_subject].courses[section_course].sections[section_section].room = section_room;
 
                 // Add instructors to Section
-                let instructors = [];
                 let instructorTable = tables[2];
                 let instructorBody = $('tbody', instructorTable);
                 let instructorTrs = $('tr', instructorBody);
 
-                instructorTrs.each(function() {
-                    instructors.push($(this).children().first().next().text());
-                });
+                const instructors = instructorTrs.map((_idx: any, elem: CheerioElement) => {
+                    return $(elem).children().first().next().text();
+                }).get();
 
                 SubjectListMap[section_subject].courses[section_course].sections[section_section].instructors = instructors;
 
@@ -243,7 +242,7 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
 
             return SubjectListMap;
         })
-        .then(function (CoursesMap) {
+        .then(function (CoursesMap: object) {
             console.log("writing file");
             let destination = __dirname + '/../data/UBC-Courses-' + year + session + '.json'
             fs.mkdirSync(path.dirname(destination));
@@ -252,7 +251,7 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
             console.log(fs.readFileSync(destination));
             // return;
         })
-        .catch(function (err) {
+        .catch(function (err: any) {
             console.log(err);
         });
 }
@@ -261,7 +260,7 @@ interface MyArguments {
     [x: string]: unknown;
     year: number;
     session: Session;
-    maxSubjects: number;
+    maxSubjects: number | undefined;
 }
 
 const possibleSessions: ReadonlyArray<Session> = ['W', 'S'];

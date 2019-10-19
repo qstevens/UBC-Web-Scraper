@@ -8,8 +8,8 @@ export class Course {
     course_title: string;
     course_link: string;
     sections: {[key:string]:Section};
-    credits: number;
-    description: string;
+    credits: number | undefined;
+    description: string | undefined;
 
     constructor(course:string, title:string, link:string) {
         this.course_name = course;

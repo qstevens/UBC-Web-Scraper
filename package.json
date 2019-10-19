@@ -10,7 +10,9 @@
     "yargs": "^14.2.0"
   },
   "devDependencies": {
+    "@types/cheerio": "^0.22.13",
     "@types/node": "^12.11.1",
+    "@types/request-promise": "^4.1.44",
     "@types/yargs": "^13.0.3",
     "typescript": "^3.6.4"
   },
