@@ -12,14 +12,14 @@ export class Section {
     start: string;
     end: string;
     comments: string;
-    building: string;
-    room: string;
-    instructors: string[];
+    building: string | undefined;
+    room: string | undefined;
+    instructors: string[] | undefined;
 
-    totalRemaining: number;
-    currentlyRegistered: number;
-    generalRemaining: number;
-    restrictedRemaining: number;
+    totalRemaining: number | undefined;
+    currentlyRegistered: number | undefined;
+    generalRemaining: number | undefined;
+    restrictedRemaining: number | undefined;
 
     subject_code: string;
     course_number: string;
