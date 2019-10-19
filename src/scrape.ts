@@ -13,8 +13,8 @@ import {Subject} from './CourseInfo/Subject';
 import {Course} from "./CourseInfo/Course";
 import {Section} from "./CourseInfo/Section";
 
-let rp = require('request-promise');
-let cheerio = require('cheerio');
+import * as rp from 'request-promise';
+import * as cheerio from 'cheerio';
 
 type Session = 'W' | 'S';
 
@@ -89,11 +89,11 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
 
                     let course_tr = $(elem).toArray()[0];
                     let course_td_a = course_tr.children[0].children[0];
-                    let course_td_a_href: string = course_td_a.attribs.href + sessionAndYearAppend;
-                    let course_td_a_text: string = course_td_a.children[0].data;
-                    let course_td_title: string = course_tr.children[1].children[0].data;
+                    let course_td_a_href = course_td_a.attribs.href + sessionAndYearAppend;
+                    let course_td_a_text = course_td_a.children[0].data;
+                    let course_td_title = course_tr.children[1].children[0].data;
 
-                    let course = new Course(course_td_a_text, course_td_title, course_td_a_href);
+                    let course = new Course(course_td_a_text || "", course_td_title || "", course_td_a_href || "");
                     SubjectListMap[course.subject_code].courses[course.course_number] = course;
                     CourseList.push(course);
                 });
@@ -109,7 +109,7 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
 
             return sectionPromises;
         })
-        .then((promises: Promise<any>[]) => Promise.all(promises))
+        .then((promises: rp.RequestPromise[]) => Promise.all(promises))
         .then(function (sectionPromises:string[]) {
 
             let SectionList:Section[] = [];
@@ -163,7 +163,7 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
                     if (section.course_number !== undefined) {
                         let currCourse = SubjectListMap[section.subject_code].courses[section.course_number];
                         if (currCourse.credits === undefined) {
-                            currCourse.credits = credits;
+                            currCourse.credits = parseInt(credits) || 0;
                         }
                         if (currCourse.description === undefined) {
                             currCourse.description = description;
@@ -173,7 +173,7 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
                     }
                 });
             }
-            let innerSectionPromises: Section[] = []
+            let innerSectionPromises: rp.RequestPromise[] = []
             for (let section of SectionList) {
                 innerSectionPromises.push(rp('https://courses.students.ubc.ca' + section.href));
             }
@@ -181,16 +181,22 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
             console.log("Sections: " + SectionList.length);
             return innerSectionPromises;
         })
-        .then((promises: Promise<any>[]) => Promise.all(promises))
+        .then((promises: rp.RequestPromise[]) => Promise.all(promises))
         .then(function (sectionPromises: string[]) {
 
             for (let promise of sectionPromises) {
                 let $ = cheerio.load(promise);
 
                 let section = $('.active')[0].children[0].data;
-                let section_subject = section.split(" ")[0];
-                let section_course = section.split(" ")[1];
-                let section_section = section.split(" ")[2];
+
+                let splitSectionOrNothing = (s: string | undefined) => {
+                    if (s === undefined) {
+                        return ["", "", ""];
+                    }
+                    return s.split(" ");
+                };
+
+                let [section_subject, section_course, section_section, ..._] = splitSectionOrNothing(section);
 
                 // Get Tables on Page (should contain a sectionTable, instructorTable, seatTable, bookTable)
                 let tables = $('table');
@@ -233,10 +239,12 @@ function scrapeCourses(year: number, session: Session, maxSubjects: number | und
                 currSeat = currSeat.next();
                 let restrictedRemaining = $('td', currSeat).first().next().text();
 
-                SubjectListMap[section_subject].courses[section_course].sections[section_section].totalRemaining = totalRemaining;
-                SubjectListMap[section_subject].courses[section_course].sections[section_section].currentlyRegistered = currrentlyRegistered;
-                SubjectListMap[section_subject].courses[section_course].sections[section_section].generalRemaining = generalRemaining;
-                SubjectListMap[section_subject].courses[section_course].sections[section_section].restrictedRemaining = restrictedRemaining;
+                let sectionInfo = SubjectListMap[section_subject].courses[section_course].sections[section_section]
+
+                sectionInfo.totalRemaining = parseInt(totalRemaining) || -1;
+                sectionInfo.currentlyRegistered = parseInt(currrentlyRegistered) || -1;
+                sectionInfo.generalRemaining = parseInt(generalRemaining) || -1;
+                sectionInfo.restrictedRemaining = parseInt(restrictedRemaining) || -1;
             }
             console.log(SubjectListMap);
 
